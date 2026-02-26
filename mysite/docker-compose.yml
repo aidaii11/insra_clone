@@ -1,28 +1,27 @@
 version: '3'
 
 services:
-
   web:
     build: .
     command: >
-      bash -c "./manage.py collectstatic --noinput && ./manage.pymakemigrations && ./manage.py migrate && gunicorn -b 0.0.0.0:8000 mysite.wsgi:application"
+      bash -c "./manage.py collectstatic --noinput && ./manage.py makemigrations && ./manage.py migrate && gunicorn -b 0.0.0.0:8000 mysite.wsgi:application"
     volumes:
-      - .:/app
-      - static_volume:/app/static
-      - media_volume:/app/media
+      - .:/
+      - static_volume:/insta_app/static
+      - media_volume:/insta_app/media
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      - postgres_db
 
-  db:
-    image: postgres:latest
+  postgres_db:
+    image: postgres:17
     restart: always
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      volumes:
+    volumes:
       - postgres_data:/var/lib/postgresql/data
 
   nginx:
@@ -30,10 +29,10 @@ services:
     ports:
       - "80:80"
     volumes:
-      - static_volume:/app/static
-      - media_volume:/app/media
+      - static_volume:/insta_app/static
+      - media_volume:/insta_app/media
     depends_on:
-      - web
+      - django
 
 volumes:
   postgres_data:
